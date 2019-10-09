@@ -8,7 +8,9 @@ from flask_swagger import swagger
 from flask_cors import CORS
 from utils import APIException, generate_sitemap
 from models import db
-#from models import Person
+from models import Family
+
+myFamily = Family('Doe')
 
 app = Flask(__name__)
 app.url_map.strict_slashes = False
@@ -28,14 +30,46 @@ def handle_invalid_usage(error):
 def sitemap():
     return generate_sitemap(app)
 
-@app.route('/hello', methods=['POST', 'GET'])
+@app.route('/members', methods=['GET', 'POST'])
 def handle_person():
 
-    response_body = {
-        "hello": "world"
-    }
+    if request.method == 'GET':
+       response_body = {
+           "members": myFamily.get_all_members(),
+           "family_name": myFamily.last_name,
+           "lucky_numbers": [],
+           "sum_of_lucky": 1
+       }
+       return jsonify(response_body), 200
 
-    return jsonify(response_body), 200
+    if request.method == 'POST':
+       body = request.get_json()
+       if 'name' not in body:
+           return 'You need to specify the first_name',400
+       if 'age' not in body:
+           return 'You need to specify the last_name', 400
+       if 'gender' not in body:
+           return 'You need to specify the last_name', 400
+       if 'lucky_number' not in body:
+           return 'You need to specify the last_name', 400
+       response = myFamily.add_member (body)
+
+       return jsonify(response), 200
+
+@app.route('/members/<int:member_id>', methods=['GET', 'DELETE'])
+def getlete_member(member_id):
+    member=family.get_member(member_id)
+    if request.method == 'GET':
+        return jsonify(response_body), 400
+    family.delete_member(member_id)
+    if request.method == 'DELETE':
+        return jsonify(response_body), 200
+
+@app.route('/members/<int:member_id>', methods=['POST'])
+def new_member(member_id):
+    member=family.get_member(member_id)
+    if request == 'POST':
+        return jsonify(response_body), 400
 
 # this only runs if `$ python src/main.py` is exercuted
 if __name__ == '__main__':
